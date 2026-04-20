@@ -1,0 +1,171 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "IAM API",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build ProjectX.IAM.API",
+      "program": "${workspaceFolder}/ProjectX.IAM/src/ProjectX.IAM.API/bin/Debug/net10.0/ProjectX.IAM.API.dll",
+      "cwd": "${workspaceFolder}/ProjectX.IAM/src/ProjectX.IAM.API",
+      "console": "integratedTerminal",
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "https://localhost:7141;http://localhost:5254"
+      },
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\\bNow listening on:\\s+(https?://\\S+)",
+        "uriFormat": "%s/scalar"
+      },
+      "presentation": {
+        "group": "api",
+        "order": 1
+      }
+    },
+    {
+      "name": "PM API",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build ProjectX.PM.API",
+      "program": "${workspaceFolder}/ProjectX.PM/src/ProjectX.PM.API/bin/Debug/net10.0/ProjectX.PM.API.dll",
+      "cwd": "${workspaceFolder}/ProjectX.PM/src/ProjectX.PM.API",
+      "console": "integratedTerminal",
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "https://localhost:7013;http://localhost:5203"
+      },
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\\bNow listening on:\\s+(https?://\\S+)",
+        "uriFormat": "%s/scalar"
+      },
+      "presentation": {
+        "group": "api",
+        "order": 2
+      }
+    },
+    {
+      "name": "POS API",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build ProjectX.POS.API",
+      "program": "${workspaceFolder}/ProjectX.POS/src/ProjectX.POS.API/bin/Debug/net10.0/ProjectX.POS.API.dll",
+      "cwd": "${workspaceFolder}/ProjectX.POS/src/ProjectX.POS.API",
+      "console": "integratedTerminal",
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "https://localhost:7014;http://localhost:5204"
+      },
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\\bNow listening on:\\s+(https?://\\S+)",
+        "uriFormat": "%s/scalar"
+      },
+      "presentation": {
+        "group": "api",
+        "order": 3
+      }
+    },
+    {
+      "name": "IAM UI Dev Server",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "npm run dev -- --open",
+      "cwd": "${workspaceFolder}/ProjectX.IAM/src/ProjectX.IAM.UI",
+      "presentation": {
+        "group": "ui",
+        "order": 1
+      }
+    },
+    {
+      "name": "PM UI Dev Server",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "npm run dev -- --open",
+      "cwd": "${workspaceFolder}/ProjectX.PM/src/ProjectX.PM.UI",
+      "presentation": {
+        "group": "ui",
+        "order": 2
+      }
+    },
+    {
+      "name": "POS UI Dev Server",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "npm run dev -- --open",
+      "cwd": "${workspaceFolder}/ProjectX.POS/src/ProjectX.POS.UI",
+      "presentation": {
+        "group": "ui",
+        "order": 3
+      }
+    }
+  ],
+  "compounds": [
+    {
+      "name": "IAM Full Stack",
+      "configurations": [
+        "IAM API",
+        "IAM UI Dev Server"
+      ],
+      "stopAll": true,
+      "presentation": {
+        "group": "stack",
+        "order": 1
+      }
+    },
+    {
+      "name": "PM Full Stack",
+      "configurations": [
+        "PM API",
+        "PM UI Dev Server"
+      ],
+      "stopAll": true,
+      "presentation": {
+        "group": "stack",
+        "order": 2
+      }
+    },
+    {
+      "name": "POS Full Stack",
+      "configurations": [
+        "POS API",
+        "POS UI Dev Server"
+      ],
+      "stopAll": true,
+      "presentation": {
+        "group": "stack",
+        "order": 3
+      }
+    },
+    {
+      "name": "All APIs",
+      "configurations": [
+        "IAM API",
+        "PM API",
+        "POS API"
+      ],
+      "stopAll": true,
+      "presentation": {
+        "group": "stack",
+        "order": 4
+      }
+    },
+    {
+      "name": "ProjectX Full Stack",
+      "configurations": [
+        "IAM API",
+        "PM API",
+        "POS API",
+        "IAM UI Dev Server",
+        "PM UI Dev Server",
+        "POS UI Dev Server"
+      ],
+      "stopAll": true,
+      "presentation": {
+        "group": "stack",
+        "order": 5
+      }
+    }
+  ]
+}
