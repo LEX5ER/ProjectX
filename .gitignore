@@ -1,0 +1,44 @@
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Frontend dependencies and build output
+**/node_modules/
+**/dist/
+**/dist-ssr/
+**/coverage/
+**/.vite/
+*.local
+
+# Local environment overrides
+**/.env
+**/.env.*
+!**/.env.example
+
+# .NET build output
+**/bin/
+**/obj/
+**/TestResults/
+**/publish/
+**/artifacts/
+
+# Visual Studio / JetBrains / VS Code
+.vs/
+**/.vs/
+**/.idea/
+**/.DS_Store
+**/.vscode/*
+!**/.vscode/extensions.json
+**/*.suo
+**/*.user
+**/*.userprefs
+**/*.rsuser
+**/*.sln.docstates
+**/*.ntvs*
+**/*.njsproj
+**/*.sw?

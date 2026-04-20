@@ -1,0 +1,6 @@
+@ProjectX.POS.API_HostAddress = http://localhost:5204
+
+GET {{ProjectX.POS.API_HostAddress}}/api/health
+Accept: application/json
+
+###
