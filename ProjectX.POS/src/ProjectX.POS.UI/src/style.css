@@ -587,6 +587,21 @@ small,
   align-items: start;
 }
 
+.checkout-layout,
+.sales-layout {
+  display: grid;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.checkout-layout {
+  grid-template-columns: minmax(0, 1.15fr) minmax(340px, 0.85fr);
+}
+
+.sales-layout {
+  grid-template-columns: minmax(320px, 400px) minmax(0, 1fr);
+}
+
 .surface-card {
   padding: 1.4rem;
 }
@@ -609,12 +624,64 @@ small,
   margin-bottom: 1rem;
 }
 
+.hero-actions,
+.toolbar-actions,
+.quantity-stepper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.hero-actions {
+  align-items: center;
+}
+
 .stack-form,
 .record-list,
 .record-body,
 .permission-selector {
   display: grid;
   gap: 0.95rem;
+}
+
+.toolbar-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.toolbar-field {
+  flex: 1 1 20rem;
+}
+
+.toggle-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+
+.checkbox-field {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  min-height: 3.5rem;
+  padding: 0.9rem 1rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(21, 48, 51, 0.14);
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.checkbox-field input {
+  inline-size: 1rem;
+  block-size: 1rem;
+  accent-color: var(--accent);
+}
+
+.checkbox-field span {
+  color: var(--text);
+  font-weight: 500;
 }
 
 .field {
@@ -718,6 +785,28 @@ small,
   gap: 0.6rem;
 }
 
+.record-card-button {
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  text-align: left;
+}
+
+.record-card-button .record-card {
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.record-card-button:hover .record-card {
+  transform: translateY(-1px);
+  border-color: rgba(10, 127, 120, 0.22);
+}
+
+.record-card-active {
+  border-color: rgba(10, 127, 120, 0.32);
+  box-shadow: 0 0 0 3px rgba(10, 127, 120, 0.08);
+}
+
 .stat-chip {
   display: inline-flex;
   align-items: center;
@@ -762,11 +851,114 @@ small,
   border: 1px solid rgba(31, 122, 71, 0.2);
 }
 
+.catalog-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.catalog-card {
+  min-height: 100%;
+  display: grid;
+  gap: 1rem;
+  align-content: space-between;
+}
+
+.cart-list {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.cart-line {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: 1.25rem;
+  border: 1px solid rgba(21, 48, 51, 0.1);
+  background: rgba(249, 252, 251, 0.9);
+}
+
+.cart-line-controls {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.85rem;
+  align-items: end;
+}
+
+.quantity-stepper {
+  align-items: center;
+}
+
+.quantity-stepper .ghost-button {
+  min-inline-size: 3rem;
+}
+
+.inline-field {
+  min-width: 0;
+}
+
+.cart-summary {
+  display: grid;
+  gap: 0.65rem;
+  padding: 1rem;
+  border-radius: 1.25rem;
+  border: 1px solid rgba(21, 48, 51, 0.1);
+  background: rgba(249, 252, 251, 0.9);
+}
+
+.compact-summary {
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  color: var(--muted);
+}
+
+.summary-row strong {
+  color: var(--text);
+}
+
+.summary-row-total {
+  padding-top: 0.65rem;
+  border-top: 1px solid rgba(21, 48, 51, 0.12);
+}
+
+.receipt-grid,
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.detail-panel {
+  display: grid;
+  gap: 0.55rem;
+  min-width: 0;
+  padding: 1rem;
+  border-radius: 1.25rem;
+  border: 1px solid rgba(21, 48, 51, 0.1);
+  background: rgba(249, 252, 251, 0.9);
+}
+
+.detail-panel p,
+.detail-panel small,
+.detail-panel strong {
+  margin: 0;
+}
+
 @media (max-width: 980px) {
   .app-shell,
   .management-split,
   .dashboard-grid,
-  .auth-page {
+  .auth-page,
+  .checkout-layout,
+  .sales-layout {
     grid-template-columns: 1fr;
   }
 
@@ -830,7 +1022,24 @@ small,
     grid-template-columns: 1fr;
   }
 
+  .toggle-grid,
+  .receipt-grid,
+  .detail-grid,
+  .cart-line-controls {
+    grid-template-columns: 1fr;
+  }
+
   .record-actions {
     flex-direction: column;
+  }
+
+  .toolbar-actions {
+    width: 100%;
+  }
+
+  .toolbar-actions .secondary-button,
+  .toolbar-actions .ghost-button,
+  .quantity-stepper {
+    width: 100%;
   }
 }

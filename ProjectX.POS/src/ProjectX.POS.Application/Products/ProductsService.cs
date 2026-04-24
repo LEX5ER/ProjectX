@@ -31,7 +31,7 @@ public sealed class ProductsService(
 
     public Task<PagedResult<ProductModel>> GetCatalogAsync(int page, int pageSize, CancellationToken cancellationToken)
     {
-        return GetProductsAsync(page, pageSize, cancellationToken);
+        return GetCatalogInternalAsync(page, pageSize, cancellationToken);
     }
 
     public async Task<ProductModel?> GetProductByIdAsync(Guid id, CancellationToken cancellationToken)
@@ -88,7 +88,7 @@ public sealed class ProductsService(
             Category = category.Trim(),
             UnitPrice = decimal.Round(unitPrice, 2, MidpointRounding.AwayFromZero),
             StockQuantity = stockQuantity,
-            Status = status,
+            Status = ProductInventoryRules.NormalizeRequestedStatus(status, stockQuantity),
             CreatedAtUtc = now,
             UpdatedAtUtc = now
         };
@@ -143,12 +143,30 @@ public sealed class ProductsService(
         product.Category = category.Trim();
         product.UnitPrice = decimal.Round(unitPrice, 2, MidpointRounding.AwayFromZero);
         product.StockQuantity = stockQuantity;
-        product.Status = status;
+        product.Status = ProductInventoryRules.NormalizeRequestedStatus(status, stockQuantity);
         product.UpdatedAtUtc = DateTimeOffset.UtcNow;
 
         await dbContext.SaveChangesAsync(cancellationToken);
 
         return Map(product);
+    }
+
+    private async Task<PagedResult<ProductModel>> GetCatalogInternalAsync(int page, int pageSize, CancellationToken cancellationToken)
+    {
+        var accessContext = await GetAuthorizationContextAsync(cancellationToken);
+        EnsureCanReadAnyProduct(accessContext);
+
+        var query = dbContext.Products
+            .AsNoTracking()
+            .Where(product => product.Status != ProductStatus.Draft && product.Status != ProductStatus.Archived)
+            .AsQueryable();
+
+        if (!accessContext.CanReadAllProducts && accessContext.ActiveProjectId.HasValue)
+        {
+            query = query.Where(product => product.ProjectId == accessContext.ActiveProjectId.Value);
+        }
+
+        return await CreatePagedResultAsync(query, page, pageSize, cancellationToken);
     }
 
     public async Task<bool> DeleteProductAsync(Guid id, CancellationToken cancellationToken)
@@ -321,13 +339,15 @@ public sealed class ProductsService(
         var normalizedPageSize = Math.Clamp(pageSize, 1, MaxPageSize);
         var skip = (normalizedPage - 1) * normalizedPageSize;
         var totalCount = await query.CountAsync(cancellationToken);
-        var items = await query
+        var products = await query
             .OrderByDescending(product => product.UpdatedAtUtc)
             .ThenBy(product => product.Name)
             .Skip(skip)
             .Take(normalizedPageSize)
-            .Select(product => Map(product))
             .ToListAsync(cancellationToken);
+        var items = products
+            .Select(Map)
+            .ToList();
         var totalPages = totalCount == 0
             ? 0
             : (int)Math.Ceiling(totalCount / (double)normalizedPageSize);

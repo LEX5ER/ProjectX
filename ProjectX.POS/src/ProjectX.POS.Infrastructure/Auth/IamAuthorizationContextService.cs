@@ -50,6 +50,8 @@ public sealed class IamAuthorizationContextService(HttpClient httpClient) : IIam
             || user.ActiveProjectPermissions.Contains("projects.read", StringComparer.OrdinalIgnoreCase);
 
         return new PosAuthorizationContext(
+            user.Id,
+            user.UserName,
             user.HasGlobalFullAccess,
             hasCatalogRead,
             hasCatalogWrite,

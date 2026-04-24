@@ -39,7 +39,9 @@ async function logout(): Promise<void> {
       <div class="side-nav-brand">
         <p class="brand-kicker">ProjectX</p>
         <h1 class="brand-title">Point of Sale</h1>
-        <p class="brand-copy">Catalog, pricing, and stock posture live here. Actions follow the active IAM project.</p>
+        <p class="brand-copy">
+          Checkout, customers, receipts, and inventory live here. Every action stays scoped to the active IAM project.
+        </p>
       </div>
 
       <label v-if="projects.length > 0" class="field project-switcher">
@@ -57,6 +59,15 @@ async function logout(): Promise<void> {
       <nav class="side-nav-links" aria-label="Primary">
         <RouterLink class="side-nav-link" :class="{ 'side-nav-link-active': activeRouteName === 'home' }" to="/">
           Dashboard
+        </RouterLink>
+        <RouterLink class="side-nav-link" :class="{ 'side-nav-link-active': activeRouteName === 'checkout' }" to="/checkout">
+          Checkout
+        </RouterLink>
+        <RouterLink class="side-nav-link" :class="{ 'side-nav-link-active': activeRouteName === 'sales' }" to="/sales">
+          Sales
+        </RouterLink>
+        <RouterLink class="side-nav-link" :class="{ 'side-nav-link-active': activeRouteName === 'customers' }" to="/customers">
+          Customers
         </RouterLink>
         <RouterLink class="side-nav-link" :class="{ 'side-nav-link-active': activeRouteName === 'products' }" to="/products">
           Products

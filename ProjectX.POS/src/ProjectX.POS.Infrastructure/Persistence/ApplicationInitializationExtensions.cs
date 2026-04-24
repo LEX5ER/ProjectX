@@ -14,6 +14,7 @@ public static class ApplicationInitializationExtensions
 
         await dbContext.Database.MigrateAsync();
         await SeedProductsAsync(dbContext);
+        await SeedCustomersAsync(dbContext);
     }
 
     private static async Task SeedProductsAsync(ApplicationDbContext dbContext)
@@ -122,5 +123,104 @@ public static class ApplicationInitializationExtensions
     private static string CreateLookupKey(Guid projectId, string code)
     {
         return $"{projectId:N}:{code}";
+    }
+
+    private static async Task SeedCustomersAsync(ApplicationDbContext dbContext)
+    {
+        var now = DateTimeOffset.UtcNow;
+        var seededCustomers = SeedCustomerCatalog.All;
+        var customerIds = seededCustomers
+            .Select(customer => customer.Id)
+            .ToArray();
+        var existingCustomers = await dbContext.Customers
+            .AsTracking()
+            .Where(customer => customerIds.Contains(customer.Id))
+            .ToDictionaryAsync(customer => customer.Id);
+        var hasChanges = false;
+
+        foreach (var seededCustomer in seededCustomers)
+        {
+            if (!existingCustomers.TryGetValue(seededCustomer.Id, out var customer))
+            {
+                dbContext.Customers.Add(new Customer
+                {
+                    Id = seededCustomer.Id,
+                    ProjectId = seededCustomer.ProjectId,
+                    FirstName = seededCustomer.FirstName,
+                    LastName = seededCustomer.LastName,
+                    Email = seededCustomer.Email,
+                    Phone = seededCustomer.Phone,
+                    Notes = seededCustomer.Notes,
+                    MarketingOptIn = seededCustomer.MarketingOptIn,
+                    TaxExempt = seededCustomer.TaxExempt,
+                    CreatedAtUtc = now,
+                    UpdatedAtUtc = now
+                });
+
+                hasChanges = true;
+                continue;
+            }
+
+            var customerChanged = false;
+
+            if (customer.ProjectId != seededCustomer.ProjectId)
+            {
+                customer.ProjectId = seededCustomer.ProjectId;
+                customerChanged = true;
+            }
+
+            if (!string.Equals(customer.FirstName, seededCustomer.FirstName, StringComparison.Ordinal))
+            {
+                customer.FirstName = seededCustomer.FirstName;
+                customerChanged = true;
+            }
+
+            if (!string.Equals(customer.LastName, seededCustomer.LastName, StringComparison.Ordinal))
+            {
+                customer.LastName = seededCustomer.LastName;
+                customerChanged = true;
+            }
+
+            if (!string.Equals(customer.Email, seededCustomer.Email, StringComparison.Ordinal))
+            {
+                customer.Email = seededCustomer.Email;
+                customerChanged = true;
+            }
+
+            if (!string.Equals(customer.Phone, seededCustomer.Phone, StringComparison.Ordinal))
+            {
+                customer.Phone = seededCustomer.Phone;
+                customerChanged = true;
+            }
+
+            if (!string.Equals(customer.Notes, seededCustomer.Notes, StringComparison.Ordinal))
+            {
+                customer.Notes = seededCustomer.Notes;
+                customerChanged = true;
+            }
+
+            if (customer.MarketingOptIn != seededCustomer.MarketingOptIn)
+            {
+                customer.MarketingOptIn = seededCustomer.MarketingOptIn;
+                customerChanged = true;
+            }
+
+            if (customer.TaxExempt != seededCustomer.TaxExempt)
+            {
+                customer.TaxExempt = seededCustomer.TaxExempt;
+                customerChanged = true;
+            }
+
+            if (customerChanged)
+            {
+                customer.UpdatedAtUtc = now;
+                hasChanges = true;
+            }
+        }
+
+        if (hasChanges)
+        {
+            await dbContext.SaveChangesAsync();
+        }
     }
 }

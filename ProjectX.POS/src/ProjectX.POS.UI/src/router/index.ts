@@ -21,6 +21,30 @@ const router = createRouter({
       }
     },
     {
+      path: "/checkout",
+      name: "checkout",
+      component: () => import("../views/CheckoutView.vue"),
+      meta: {
+        requiresAuth: true
+      }
+    },
+    {
+      path: "/sales",
+      name: "sales",
+      component: () => import("../views/SalesView.vue"),
+      meta: {
+        requiresAuth: true
+      }
+    },
+    {
+      path: "/customers",
+      name: "customers",
+      component: () => import("../views/CustomersView.vue"),
+      meta: {
+        requiresAuth: true
+      }
+    },
+    {
       path: "/products",
       name: "products",
       component: () => import("../views/ProductsView.vue"),

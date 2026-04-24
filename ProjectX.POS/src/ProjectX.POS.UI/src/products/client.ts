@@ -24,7 +24,7 @@ export interface PagedResult<T> {
   totalPages: number;
 }
 
-const defaultApiBaseUrl = "https://localhost:7014";
+const defaultApiBaseUrl = "";
 
 function resolveApiUrl(path: string): string {
   if (/^https?:\/\//.test(path)) {
@@ -61,12 +61,34 @@ export async function listProductsPage(page = 1, pageSize = 10): Promise<PagedRe
   return request<PagedResult<ProductRecord>>(`/api/products${buildPagedQuery(page, pageSize)}`);
 }
 
+export async function listCatalogPage(page = 1, pageSize = 10): Promise<PagedResult<ProductRecord>> {
+  return request<PagedResult<ProductRecord>>(`/api/products/catalog${buildPagedQuery(page, pageSize)}`);
+}
+
 export async function listProducts(): Promise<ProductRecord[]> {
   const items: ProductRecord[] = [];
   let page = 1;
 
   while (true) {
     const result = await listProductsPage(page, 100);
+    items.push(...result.items);
+
+    if (result.totalPages <= 0 || page >= result.totalPages) {
+      break;
+    }
+
+    page += 1;
+  }
+
+  return items;
+}
+
+export async function listCatalog(): Promise<ProductRecord[]> {
+  const items: ProductRecord[] = [];
+  let page = 1;
+
+  while (true) {
+    const result = await listCatalogPage(page, 100);
     items.push(...result.items);
 
     if (result.totalPages <= 0 || page >= result.totalPages) {

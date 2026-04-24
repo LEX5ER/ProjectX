@@ -52,7 +52,7 @@ const storageKey = "projectx-pos.session";
 const projectHeaderName = "X-Project-Id";
 const clientApplicationHeaderName = "X-Client-Application";
 const clientApplicationName = "POS";
-const defaultIamApiBaseUrl = "https://localhost:7141";
+const defaultIamApiBaseUrl = "/iam-api";
 
 const state = reactive({
   initialized: false,
@@ -216,24 +216,67 @@ function getActiveProject(user: AuthUser | null): AuthProject | null {
   return user.projects.find(project => project.id === user.activeProjectId) ?? null;
 }
 
+async function readResponsePayload(response: Response): Promise<{ json: unknown; text: string }> {
+  if (response.status === 204) {
+    return { json: null, text: "" };
+  }
+
+  const text = await response.text();
+
+  if (!text) {
+    return { json: null, text: "" };
+  }
+
+  try {
+    return {
+      json: JSON.parse(text),
+      text
+    };
+  } catch {
+    return {
+      json: null,
+      text
+    };
+  }
+}
+
+function describeFailure(payload: unknown, text: string, response: Response, fallbackMessage: string): string {
+  if (typeof (payload as { detail?: unknown })?.detail === "string") {
+    return (payload as { detail: string }).detail;
+  }
+
+  if (typeof (payload as { title?: unknown })?.title === "string") {
+    return (payload as { title: string }).title;
+  }
+
+  const normalizedText = text.trim();
+
+  if (normalizedText) {
+    return normalizedText;
+  }
+
+  return `${fallbackMessage} (${response.status} ${response.statusText})`;
+}
+
 async function requestIamJson<T>(path: string, init: RequestInit): Promise<T> {
   const headers = new Headers(init.headers);
   withClientApplicationHeader(headers);
 
-  const response = await fetch(resolveIamApiUrl(path), {
-    ...init,
-    headers
-  });
-  const payload = response.status === 204 ? null : await response.json().catch(() => null);
+  let response: Response;
+
+  try {
+    response = await fetch(resolveIamApiUrl(path), {
+      ...init,
+      headers
+    });
+  } catch {
+    throw new Error("Unable to reach IAM from POS. Make sure the IAM API and the POS UI dev server are running.");
+  }
+
+  const { json: payload, text } = await readResponsePayload(response);
 
   if (!response.ok) {
-    const detail = typeof payload?.detail === "string"
-      ? payload.detail
-      : typeof payload?.title === "string"
-        ? payload.title
-        : "The request failed.";
-
-    throw new Error(detail);
+    throw new Error(describeFailure(payload, text, response, "IAM request failed"));
   }
 
   return payload as T;
@@ -445,30 +488,35 @@ export const auth = {
     withProjectHeader(headers, state.user?.activeProjectId ?? null);
     withClientApplicationHeader(headers);
 
-    let response = await fetch(path, {
-      ...init,
-      headers
-    });
+    let response: Response;
 
-    if (response.status === 401 && await ensureFreshAccessToken() && state.accessToken) {
-      headers.set("Authorization", `Bearer ${state.accessToken}`);
-      withProjectHeader(headers, state.user?.activeProjectId ?? null);
+    try {
       response = await fetch(path, {
         ...init,
         headers
       });
+    } catch {
+      throw new Error("Unable to reach the POS API. Make sure the POS API and the POS UI dev server are running.");
     }
 
-    const payload = response.status === 204 ? null : await response.json().catch(() => null);
+    if (response.status === 401 && await ensureFreshAccessToken() && state.accessToken) {
+      headers.set("Authorization", `Bearer ${state.accessToken}`);
+      withProjectHeader(headers, state.user?.activeProjectId ?? null);
+
+      try {
+        response = await fetch(path, {
+          ...init,
+          headers
+        });
+      } catch {
+        throw new Error("Unable to reach the POS API. Make sure the POS API and the POS UI dev server are running.");
+      }
+    }
+
+    const { json: payload, text } = await readResponsePayload(response);
 
     if (!response.ok) {
-      const detail = typeof payload?.detail === "string"
-        ? payload.detail
-        : typeof payload?.title === "string"
-          ? payload.title
-          : "The request failed.";
-
-      throw new Error(detail);
+      throw new Error(describeFailure(payload, text, response, "POS request failed"));
     }
 
     return payload as T;

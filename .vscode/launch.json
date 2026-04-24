@@ -129,6 +129,7 @@
     {
       "name": "POS Full Stack",
       "configurations": [
+        "IAM API",
         "POS API",
         "POS UI Dev Server"
       ],

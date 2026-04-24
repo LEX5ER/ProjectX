@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from "vue";
+import { computed, reactive, ref, watch } from "vue";
 import { auth } from "../auth/session";
+import { canManageAcrossProjects, canManageProjectData, canReadProjectData } from "../auth/access";
 import {
   createProduct,
   deleteProduct,
@@ -36,24 +37,9 @@ const currentUser = computed(() => auth.state.user);
 const activeProject = computed(() => auth.getActiveProject());
 const activeProjectId = computed(() => activeProject.value?.id ?? "");
 const activeProjectSummary = computed(() => activeProject.value?.name ?? "the active IAM project");
-const globalPermissions = computed(() => new Set(currentUser.value?.globalPermissions ?? []));
-const activeProjectPermissions = computed(() => new Set(currentUser.value?.activeProjectPermissions ?? []));
-const hasGlobalWrite = computed(() => Boolean(
-  currentUser.value?.hasGlobalFullAccess || globalPermissions.value.has("projects.write")
-));
-const canReadProducts = computed(() => Boolean(
-  currentUser.value?.hasGlobalFullAccess
-  || globalPermissions.value.has("projects.read")
-  || globalPermissions.value.has("projects.write")
-  || currentUser.value?.hasAllPermissions
-  || activeProjectPermissions.value.has("projects.read")
-  || activeProjectPermissions.value.has("projects.write")
-));
-const canManageProducts = computed(() => Boolean(
-  hasGlobalWrite.value
-  || currentUser.value?.hasAllPermissions
-  || activeProjectPermissions.value.has("projects.write")
-));
+const canReadProducts = computed(() => canReadProjectData(currentUser.value));
+const canManageProducts = computed(() => canManageProjectData(currentUser.value));
+const canManageAnyProject = computed(() => canManageAcrossProjects(currentUser.value));
 const statusOptions: ProductStatus[] = ["Draft", "Active", "LowStock", "OutOfStock", "Archived"];
 const selectedProduct = computed(() => products.value.find(product => product.id === productForm.id) ?? null);
 const canSubmitProduct = computed(() => {
@@ -86,7 +72,7 @@ function clearForm(): void {
 
 function canEditProduct(product: ProductRecord): boolean {
   return canManageProducts.value
-    && (hasGlobalWrite.value || product.projectId === activeProjectId.value);
+    && (canManageAnyProject.value || product.projectId === activeProjectId.value);
 }
 
 function editProduct(product: ProductRecord): void {
@@ -109,7 +95,7 @@ function editProduct(product: ProductRecord): void {
 
 async function loadData(): Promise<void> {
   loading.value = true;
-  clearMessages();
+  errorMessage.value = "";
 
   try {
     if (!canReadProducts.value) {
@@ -233,9 +219,12 @@ function formatTimestamp(value: string): string {
   return new Date(value).toLocaleString();
 }
 
-onMounted(async () => {
+watch(activeProjectId, async () => {
+  currentPage.value = 1;
+  clearMessages();
+  clearForm();
   await loadData();
-});
+}, { immediate: true });
 </script>
 
 <template>

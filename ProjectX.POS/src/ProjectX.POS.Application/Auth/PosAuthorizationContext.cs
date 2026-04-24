@@ -1,6 +1,8 @@
 namespace ProjectX.POS.Application.Auth;
 
 public sealed record PosAuthorizationContext(
+    Guid UserId,
+    string UserName,
     bool HasGlobalFullAccess,
     bool HasGlobalCatalogRead,
     bool HasGlobalCatalogWrite,
@@ -12,6 +14,10 @@ public sealed record PosAuthorizationContext(
     public bool CanReadAllProducts => HasGlobalFullAccess || HasGlobalCatalogRead;
 
     public bool CanManageAllProducts => HasGlobalFullAccess || HasGlobalCatalogWrite;
+
+    public bool CanReadAnyProjectData => CanReadAllProducts || (ActiveProjectId.HasValue && (HasActiveProjectRead || HasActiveProjectWrite));
+
+    public bool CanManageAnyProjectData => CanManageAllProducts || (ActiveProjectId.HasValue && HasActiveProjectWrite);
 
     public bool CanReadAnyProduct =>
         CanReadAllProducts
@@ -28,6 +34,18 @@ public sealed record PosAuthorizationContext(
     }
 
     public bool CanManageProduct(Guid projectId)
+    {
+        return CanManageAllProducts
+            || (ActiveProjectId == projectId && HasActiveProjectWrite);
+    }
+
+    public bool CanReadProject(Guid projectId)
+    {
+        return CanReadAllProducts
+            || (ActiveProjectId == projectId && (HasActiveProjectRead || HasActiveProjectWrite));
+    }
+
+    public bool CanManageProject(Guid projectId)
     {
         return CanManageAllProducts
             || (ActiveProjectId == projectId && HasActiveProjectWrite);
